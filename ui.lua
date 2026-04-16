@@ -405,8 +405,11 @@ refreshRows = function()
             getTrackedGroupMode() == "categories" and "Bars: Categories" or "Bars: 2 Bars"
         )
     end
-    if App.ui.controls.tracked_wrap_value ~= nil then
-        safeSetText(App.ui.controls.tracked_wrap_value, tostring(getTrackedIconsPerRow()))
+    if App.ui.controls.tracked_wrap_header ~= nil then
+        safeSetText(
+            App.ui.controls.tracked_wrap_header,
+            string.format("Icons / Row: %d", getTrackedIconsPerRow())
+        )
     end
 
     local startIndex = ((settings.page - 1) * ROWS_PER_PAGE) + 1
@@ -441,8 +444,46 @@ local function ensureWindow()
     end
 
     local settings = ensureSettings()
+    local WINDOW_WIDTH = 820
+    local WINDOW_HEIGHT = 620
+    local PANEL_X = 12
+    local PANEL_WIDTH = 784
+    local SEARCH_PANEL_Y = 38
+    local SEARCH_PANEL_HEIGHT = 148
+    local RESULTS_PANEL_Y = 192
+    local RESULTS_PANEL_HEIGHT = 360
+    local FOOTER_PANEL_Y = 558
+    local FOOTER_PANEL_HEIGHT = 42
+    local SEARCH_HEADER_Y = 74
+    local SEARCH_ROW_Y = 98
+    local ALT_HEADER_Y = 136
+    local ALT_ROW_Y = 160
+    local LIST_HEADER_Y = 196
+    local ROWS_START_Y = 220
+    local ROW_PANEL_X = 24
+    local ROW_PANEL_WIDTH = 760
+    local ROW_NAME_X = 52
+    local ROW_NAME_WIDTH = 560
+    local ROW_META_X = 52
+    local ROW_META_WIDTH = 520
+    local ROW_COUNT_X = 640
+    local ROW_COUNT_WIDTH = 44
+    local ROW_TRACK_X = 692
+    local ROW_TRACK_WIDTH = 72
+    local TRACKED_WRAP_GROUP_X = 620
+    local TRACKED_WRAP_BUTTON_WIDTH = 36
+    local TRACKED_WRAP_MINUS_X = 628
+    local TRACKED_WRAP_PLUS_X = 716
+    local PAGER_PREV_X = 36
+    local PAGER_BUTTON_WIDTH = 58
+    local PAGER_LABEL_X = 134
+    local PAGER_LABEL_WIDTH = 140
+    local PAGER_NEXT_X = 292
+    local STATUS_LABEL_X = 382
+    local STATUS_LABEL_WIDTH = 330
+
     local window = safePcall(function()
-        return api.Interface:CreateWindow(WINDOW_ID, "Nuzi Inventory", 780, 620)
+        return api.Interface:CreateWindow(WINDOW_ID, "Nuzi Inventory", WINDOW_WIDTH, WINDOW_HEIGHT)
     end)
     if window == nil then
         return
@@ -455,26 +496,26 @@ local function ensureWindow()
         end)
     end
 
-    App.ui.controls.search_panel = createPanel(window, "nuziInventorySearchPanel", 12, 38, 744, 116, { 0.09, 0.07, 0.04, 0.86 })
-    App.ui.controls.results_panel = createPanel(window, "nuziInventoryResultsPanel", 12, 160, 744, 392, { 0.05, 0.04, 0.03, 0.88 })
-    App.ui.controls.footer_panel = createPanel(window, "nuziInventoryFooterPanel", 12, 558, 744, 42, { 0.08, 0.06, 0.04, 0.86 })
+    App.ui.controls.search_panel = createPanel(window, "nuziInventorySearchPanel", PANEL_X, SEARCH_PANEL_Y, PANEL_WIDTH, SEARCH_PANEL_HEIGHT, { 0.09, 0.07, 0.04, 0.86 })
+    App.ui.controls.results_panel = createPanel(window, "nuziInventoryResultsPanel", PANEL_X, RESULTS_PANEL_Y, PANEL_WIDTH, RESULTS_PANEL_HEIGHT, { 0.05, 0.04, 0.03, 0.88 })
+    App.ui.controls.footer_panel = createPanel(window, "nuziInventoryFooterPanel", PANEL_X, FOOTER_PANEL_Y, PANEL_WIDTH, FOOTER_PANEL_HEIGHT, { 0.08, 0.06, 0.04, 0.86 })
 
     createLabel(window, "nuziInventoryTitle", "Inventory Ledger", 20, 18, 220, 18)
-    App.ui.controls.summary_label = createLabel(window, "nuziInventorySummary", "0 result(s)", 28, 52, 300, 13)
-    App.ui.controls.character_label = createLabel(window, "nuziInventoryCharacter", "", 430, 52, 300, 13)
+    App.ui.controls.summary_label = createLabel(window, "nuziInventorySummary", "0 result(s)", 28, 52, 330, 13)
+    App.ui.controls.character_label = createLabel(window, "nuziInventoryCharacter", "", 470, 52, 300, 13)
     safeSetText(App.ui.controls.character_label, "Current: " .. (getPlayerName() ~= "" and getPlayerName() or "Unknown"))
 
-    createLabel(window, "nuziInventorySearchHeader", "Search Inventory", 28, 78, 180, 14)
-    App.ui.controls.query_edit = createEdit(window, "nuziInventoryQuery", "Search items", 28, 100, 280, 28, 80)
+    createLabel(window, "nuziInventorySearchHeader", "Search Inventory", 28, SEARCH_HEADER_Y, 180, 14)
+    App.ui.controls.query_edit = createEdit(window, "nuziInventoryQuery", "Search items", 28, SEARCH_ROW_Y, 294, 28, 80)
     setEditText(App.ui.controls.query_edit, settings.query or "")
 
-    App.ui.controls.search_button = createButton(window, "nuziInventorySearch", "Search", 318, 100, 100, 28)
+    App.ui.controls.search_button = createButton(window, "nuziInventorySearch", "Search", 332, SEARCH_ROW_Y, 96, 28)
     App.ui.controls.search_button:SetHandler("OnClick", runSearch)
 
-    App.ui.controls.clear_button = createButton(window, "nuziInventoryClear", "Clear", 426, 100, 90, 28)
+    App.ui.controls.clear_button = createButton(window, "nuziInventoryClear", "Clear", 436, SEARCH_ROW_Y, 88, 28)
     App.ui.controls.clear_button:SetHandler("OnClick", clearSearch)
 
-    App.ui.controls.refresh_button = createButton(window, "nuziInventoryRefresh", "Refresh", 524, 100, 90, 28)
+    App.ui.controls.refresh_button = createButton(window, "nuziInventoryRefresh", "Refresh", 532, SEARCH_ROW_Y, 92, 28)
     App.ui.controls.refresh_button:SetHandler("OnClick", function()
         buildResults()
         refreshRows()
@@ -484,39 +525,43 @@ local function ensureWindow()
         setStatus("Inventory refreshed")
     end)
 
-    App.ui.controls.bank_toggle_button = createButton(window, "nuziInventoryBankToggle", "", 622, 100, 110, 28)
+    App.ui.controls.bank_toggle_button = createButton(window, "nuziInventoryBankToggle", "", 632, SEARCH_ROW_Y, 120, 28)
     App.ui.controls.bank_toggle_button:SetHandler("OnClick", toggleBank)
 
-    createLabel(window, "nuziInventoryAltHeader", "Alt Snapshots", 28, 132, 180, 14)
-    App.ui.controls.save_character_button = createButton(window, "nuziInventorySaveCharacter", "Save This Character", 28, 152, 170, 28)
+    createLabel(window, "nuziInventoryAltHeader", "Alt Snapshots", 28, ALT_HEADER_Y, 180, 14)
+    App.ui.controls.save_character_button = createButton(window, "nuziInventorySaveCharacter", "Save This Character", 28, ALT_ROW_Y, 180, 28)
     App.ui.controls.save_character_button:SetHandler("OnClick", saveCurrentCharacterSnapshot)
 
-    App.ui.controls.remove_character_button = createButton(window, "nuziInventoryRemoveCharacter", "Remove Saved Character", 206, 152, 190, 28)
+    App.ui.controls.remove_character_button = createButton(window, "nuziInventoryRemoveCharacter", "Remove Saved Character", 216, ALT_ROW_Y, 204, 28)
     App.ui.controls.remove_character_button:SetHandler("OnClick", removeCurrentCharacterSnapshot)
 
-    createLabel(window, "nuziInventoryTrackedHeader", "Tracked Bars", 430, 132, 180, 14)
-    App.ui.controls.tracked_mode_button = createButton(window, "nuziInventoryTrackedMode", "", 430, 152, 150, 28)
+    createLabel(window, "nuziInventoryTrackedHeader", "Tracked Bars", 456, ALT_HEADER_Y, 170, 14)
+    App.ui.controls.tracked_mode_button = createButton(window, "nuziInventoryTrackedMode", "", 456, ALT_ROW_Y, 144, 28)
     App.ui.controls.tracked_mode_button:SetHandler("OnClick", cycleTrackedGroupMode)
-    createLabel(window, "nuziInventoryWrapHeader", "Icons / Row", 592, 132, 100, 14)
-    App.ui.controls.tracked_wrap_minus = createButton(window, "nuziInventoryWrapMinus", "-", 592, 152, 28, 28)
+    App.ui.controls.tracked_wrap_header = createLabel(
+        window,
+        "nuziInventoryWrapHeader",
+        "Icons / Row: " .. tostring(getTrackedIconsPerRow()),
+        TRACKED_WRAP_GROUP_X,
+        ALT_HEADER_Y,
+        156,
+        14
+    )
+    App.ui.controls.tracked_wrap_minus = createButton(window, "nuziInventoryWrapMinus", "-", TRACKED_WRAP_MINUS_X, ALT_ROW_Y, TRACKED_WRAP_BUTTON_WIDTH, 28)
     App.ui.controls.tracked_wrap_minus:SetHandler("OnClick", function()
         adjustTrackedIconsPerRow(-1)
     end)
-    App.ui.controls.tracked_wrap_value = createLabel(window, "nuziInventoryWrapValue", tostring(getTrackedIconsPerRow()), 626, 157, 24, 13)
-    if App.ui.controls.tracked_wrap_value ~= nil and App.ui.controls.tracked_wrap_value.style ~= nil and App.ui.controls.tracked_wrap_value.style.SetAlign ~= nil then
-        App.ui.controls.tracked_wrap_value.style:SetAlign(ALIGN.CENTER)
-    end
-    App.ui.controls.tracked_wrap_plus = createButton(window, "nuziInventoryWrapPlus", "+", 654, 152, 28, 28)
+    App.ui.controls.tracked_wrap_plus = createButton(window, "nuziInventoryWrapPlus", "+", TRACKED_WRAP_PLUS_X, ALT_ROW_Y, TRACKED_WRAP_BUTTON_WIDTH, 28)
     App.ui.controls.tracked_wrap_plus:SetHandler("OnClick", function()
         adjustTrackedIconsPerRow(1)
     end)
 
-    createLabel(window, "nuziInventoryListHeader", "Items", 28, 174, 120, 14)
-    createLabel(window, "nuziInventoryCountHeader", "Qty", 694, 174, 40, 14)
+    createLabel(window, "nuziInventoryListHeader", "Items", 28, LIST_HEADER_Y, 120, 14)
+    createLabel(window, "nuziInventoryCountHeader", "Qty", 720, LIST_HEADER_Y, 40, 14)
 
     for index = 1, ROWS_PER_PAGE do
-        local y = 198 + ((index - 1) * 28)
-        local rowPanel = createPanel(window, "nuziInventoryRowPanel" .. tostring(index), 24, y, 720, 24, index % 2 == 0 and { 0.12, 0.09, 0.05, 0.38 } or { 0.09, 0.07, 0.04, 0.28 })
+        local y = ROWS_START_Y + ((index - 1) * 28)
+        local rowPanel = createPanel(window, "nuziInventoryRowPanel" .. tostring(index), ROW_PANEL_X, y, ROW_PANEL_WIDTH, 24, index % 2 == 0 and { 0.12, 0.09, 0.05, 0.38 } or { 0.09, 0.07, 0.04, 0.28 })
         local rowIcon = createItemSlot("nuziInventoryRowIcon" .. tostring(index), rowPanel)
         if rowIcon ~= nil then
             rowIcon:AddAnchor("TOPLEFT", rowPanel, 2, 2)
@@ -525,10 +570,10 @@ local function ensureWindow()
         App.ui.rows[index] = {
             panel = rowPanel,
             icon = rowIcon,
-            name_label = createLabel(window, "nuziInventoryRowName" .. tostring(index), "", 52, y + 1, 420, 12, 8),
-            meta_label = createLabel(window, "nuziInventoryRowMeta" .. tostring(index), "", 52, y + 11, 360, 10, 7),
-            count_label = createLabel(window, "nuziInventoryRowCount" .. tostring(index), "", 616, y + 4, 44, 12, 8),
-            track_button = createButton(window, "nuziInventoryRowTrack" .. tostring(index), "Track", 664, y + 1, 70, 22)
+            name_label = createLabel(window, "nuziInventoryRowName" .. tostring(index), "", ROW_NAME_X, y + 1, ROW_NAME_WIDTH, 12, 8),
+            meta_label = createLabel(window, "nuziInventoryRowMeta" .. tostring(index), "", ROW_META_X, y + 11, ROW_META_WIDTH, 10, 7),
+            count_label = createLabel(window, "nuziInventoryRowCount" .. tostring(index), "", ROW_COUNT_X, y + 4, ROW_COUNT_WIDTH, 12, 8),
+            track_button = createButton(window, "nuziInventoryRowTrack" .. tostring(index), "Track", ROW_TRACK_X, y + 1, ROW_TRACK_WIDTH, 22)
         }
         if App.ui.rows[index].track_button ~= nil and App.ui.rows[index].track_button.SetHandler ~= nil then
             App.ui.rows[index].track_button:SetHandler("OnClick", function()
@@ -556,23 +601,26 @@ local function ensureWindow()
         end
     end
 
-    App.ui.controls.prev_button = createButton(window, "nuziInventoryPrev", "<", 28, 565, 40, 28)
+    App.ui.controls.prev_button = createButton(window, "nuziInventoryPrev", "<", PAGER_PREV_X, 565, PAGER_BUTTON_WIDTH, 28)
     App.ui.controls.prev_button:SetHandler("OnClick", function()
         local state = ensureSettings()
         state.page = math.max(1, state.page - 1)
         refreshRows()
     end)
 
-    App.ui.controls.page_label = createLabel(window, "nuziInventoryPage", "Page 1 / 1", 82, 571, 120, 13)
+    App.ui.controls.page_label = createLabel(window, "nuziInventoryPage", "Page 1 / 1", PAGER_LABEL_X, 571, PAGER_LABEL_WIDTH, 13)
+    if App.ui.controls.page_label ~= nil and App.ui.controls.page_label.style ~= nil and App.ui.controls.page_label.style.SetAlign ~= nil then
+        App.ui.controls.page_label.style:SetAlign(ALIGN.CENTER)
+    end
 
-    App.ui.controls.next_button = createButton(window, "nuziInventoryNext", ">", 214, 565, 40, 28)
+    App.ui.controls.next_button = createButton(window, "nuziInventoryNext", ">", PAGER_NEXT_X, 565, PAGER_BUTTON_WIDTH, 28)
     App.ui.controls.next_button:SetHandler("OnClick", function()
         local state = ensureSettings()
         state.page = state.page + 1
         refreshRows()
     end)
 
-    App.ui.controls.status_label = createLabel(window, "nuziInventoryStatus", "", 284, 571, 430, 13)
+    App.ui.controls.status_label = createLabel(window, "nuziInventoryStatus", "", STATUS_LABEL_X, 571, STATUS_LABEL_WIDTH, 13)
 
     safeShow(window, false)
     buildResults()

@@ -16,7 +16,7 @@ if Runtime == nil then
     return {
         name = "Nuzi Inventory",
         author = "Nuzi",
-        version = "1.0.0",
+        version = "1.0.1",
         desc = "Search bag, bank, alt, and tracked items across your roster",
         OnLoad = function() end,
         OnUnload = function() end
