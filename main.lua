@@ -1,18 +1,14 @@
-local function loadModule(name)
-    local ok, mod = pcall(require, "nuzi-inventory/" .. name)
-    if ok then
-        return mod
-    end
-    ok, mod = pcall(require, "nuzi-inventory." .. name)
-    if ok then
-        return mod
-    end
-    return nil
-end
+local api = require("api")
+local Core = api._NuziCore or require("nuzi-core/core")
 
-local Runtime = loadModule("runtime")
+local Log = Core.Log
+local Require = Core.Require
+
+local logger = Log.Create("Nuzi Inventory")
+local Runtime, _, errors = Require.Addon("nuzi-inventory", "runtime")
 
 if Runtime == nil then
+    logger:Err("Module load error: " .. tostring(Require.DescribeErrors(errors)))
     return {
         name = "Nuzi Inventory",
         author = "Nuzi",
@@ -24,4 +20,3 @@ if Runtime == nil then
 end
 
 return Runtime
-

@@ -1,9 +1,17 @@
 local api = require("api")
+local Core = api._NuziCore or require("nuzi-core/core")
 local Constants = require("nuzi-inventory/constants")
 local Shared = require("nuzi-inventory/shared")
 local UiHelpers = require("nuzi-inventory/ui_helpers")
 
+local Events = Core.Events
+local Log = Core.Log
+
 local addon = Constants.ADDON
+local logger = Log.Create(Constants.ADDON ~= nil and Constants.ADDON.name or "Nuzi Inventory")
+local events = Events.Create({
+    logger = logger
+})
 
 local WINDOW_ID = Constants.WINDOW_ID
 local BUTTON_ID = Constants.BUTTON_ID
@@ -147,23 +155,18 @@ local function onLoad()
     end
     App.tracked_bag_signature = getTrackedBagCountSignature()
     App.tracked_poll_accum_ms = 0
-    api.On("UI_RELOADED", onUiReloaded)
-    api.On("CHAT_MESSAGE", onChatMessage)
-    api.On("UPDATE", onUpdate)
-    api.On("BAG_UPDATE", onTrackedInventoryEvent)
-    api.On("BANK_UPDATE", onTrackedInventoryEvent)
-    api.On("UNIT_EQUIPMENT_CHANGED", onTrackedInventoryEvent)
-    api.On("ITEM_EQUIP_RESULT", onTrackedInventoryEvent)
+    events:OnSafe("UI_RELOADED", "UI_RELOADED", onUiReloaded)
+    events:OnSafe("CHAT_MESSAGE", "CHAT_MESSAGE", onChatMessage)
+    events:OnSafe("UPDATE", "UPDATE", onUpdate)
+    events:OnSafe("BAG_UPDATE", "BAG_UPDATE", onTrackedInventoryEvent)
+    events:OnSafe("BANK_UPDATE", "BANK_UPDATE", onTrackedInventoryEvent)
+    events:OnSafe("UNIT_EQUIPMENT_CHANGED", "UNIT_EQUIPMENT_CHANGED", onTrackedInventoryEvent)
+    events:OnSafe("ITEM_EQUIP_RESULT", "ITEM_EQUIP_RESULT", onTrackedInventoryEvent)
+    logger:Info("Loaded v" .. tostring(addon ~= nil and addon.version or "1.0.0"))
 end
 
 local function onUnload()
-    api.On("UI_RELOADED", function() end)
-    api.On("CHAT_MESSAGE", function() end)
-    api.On("UPDATE", function() end)
-    api.On("BAG_UPDATE", function() end)
-    api.On("BANK_UPDATE", function() end)
-    api.On("UNIT_EQUIPMENT_CHANGED", function() end)
-    api.On("ITEM_EQUIP_RESULT", function() end)
+    events:ClearAll()
     unloadUi()
 end
 
