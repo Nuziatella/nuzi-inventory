@@ -12,6 +12,10 @@ local logger = Log.Create(Constants.ADDON ~= nil and Constants.ADDON.name or "Nu
 local events = Events.Create({
     logger = logger
 })
+local inventoryEvents = Events.CreateEventWindow({
+    id = Constants.EVENT_WINDOW_ID,
+    logger = logger
+})
 
 local WINDOW_ID = Constants.WINDOW_ID
 local BUTTON_ID = Constants.BUTTON_ID
@@ -158,15 +162,16 @@ local function onLoad()
     events:OnSafe("UI_RELOADED", "UI_RELOADED", onUiReloaded)
     events:OnSafe("CHAT_MESSAGE", "CHAT_MESSAGE", onChatMessage)
     events:OnSafe("UPDATE", "UPDATE", onUpdate)
-    events:OnSafe("BAG_UPDATE", "BAG_UPDATE", onTrackedInventoryEvent)
-    events:OnSafe("BANK_UPDATE", "BANK_UPDATE", onTrackedInventoryEvent)
-    events:OnSafe("UNIT_EQUIPMENT_CHANGED", "UNIT_EQUIPMENT_CHANGED", onTrackedInventoryEvent)
-    events:OnSafe("ITEM_EQUIP_RESULT", "ITEM_EQUIP_RESULT", onTrackedInventoryEvent)
-    logger:Info("Loaded v" .. tostring(addon ~= nil and addon.version or "1.0.0"))
+    inventoryEvents:OnSafe("BAG_UPDATE", "BAG_UPDATE", onTrackedInventoryEvent)
+    inventoryEvents:OnSafe("BANK_UPDATE", "BANK_UPDATE", onTrackedInventoryEvent)
+    inventoryEvents:OnSafe("UNIT_EQUIPMENT_CHANGED", "UNIT_EQUIPMENT_CHANGED", onTrackedInventoryEvent)
+    inventoryEvents:OnSafe("ITEM_EQUIP_RESULT", "ITEM_EQUIP_RESULT", onTrackedInventoryEvent)
+    logger:Info("Loaded v" .. tostring(addon ~= nil and addon.version or "2.0.0"))
 end
 
 local function onUnload()
     events:ClearAll()
+    inventoryEvents:ClearAll()
     unloadUi()
 end
 

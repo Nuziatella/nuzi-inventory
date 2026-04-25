@@ -68,8 +68,6 @@ You can also change `Icons per Row` so bars wrap cleanly instead of becoming a s
 ## Notes
 
 - Saved alt snapshots only reflect what the character had when you last clicked `Save This Character`.
-- Tracked non-equipables are display-onl. Direct consumable use is blocked in the API.
+- Tracked non-equipables are display-only. Direct consumable use is blocked in the API.
 
-## Version
-
-Current version: `1.0.0`
+2.0.0

@@ -3,13 +3,14 @@ local Constants = {}
 Constants.ADDON = {
     name = "Nuzi Inventory",
     author = "Nuzi",
-    version = "1.0.2",
+    version = "2.0.0",
     desc = "Search bag, bank, alt, and tracked items across your roster"
 }
 
 Constants.ADDON_ID = "nuzi-inventory"
 Constants.WINDOW_ID = "nuziInventoryWindow"
 Constants.BUTTON_ID = "nuziInventoryButton"
+Constants.EVENT_WINDOW_ID = "nuziInventoryEvents"
 Constants.SETTINGS_FILE_PATH = "nuzi-inventory/.data/settings.txt"
 Constants.LEGACY_SETTINGS_FILE_PATHS = {
     "nuzi-inventory/settings.txt",

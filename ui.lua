@@ -907,14 +907,14 @@ local function ensureTrackedBar(groupKey, title, useIndex, visualOnly)
                         hotbar:StopMovingOrSizing()
                     end
                     local ok, x, y = false, nil, nil
-                    if hotbar.GetEffectiveOffset ~= nil then
-                        ok, x, y = pcall(function()
-                            return hotbar:GetEffectiveOffset()
-                        end)
-                    end
-                    if (not ok or x == nil or y == nil) and hotbar.GetOffset ~= nil then
+                    if hotbar.GetOffset ~= nil then
                         ok, x, y = pcall(function()
                             return hotbar:GetOffset()
+                        end)
+                    end
+                    if (not ok or x == nil or y == nil) and hotbar.GetEffectiveOffset ~= nil then
+                        ok, x, y = pcall(function()
+                            return hotbar:GetEffectiveOffset()
                         end)
                     end
                     if ok then
@@ -1080,11 +1080,19 @@ local function refreshInventoryUi()
     end
 end
 
+local function refreshInventoryChange()
+    if isWindowVisible() then
+        refreshInventoryUi()
+    elseif refreshTrackedHotbar ~= nil then
+        refreshTrackedHotbar()
+    end
+end
+
 local function onTrackedInventoryEvent()
     if not hasTrackedItems() and not isWindowVisible() then
         return
     end
-    refreshInventoryUi()
+    refreshInventoryChange()
     App.tracked_bag_signature = getTrackedBagCountSignature()
     App.tracked_poll_accum_ms = 0
 end
@@ -1105,7 +1113,7 @@ local function onUpdate(dt)
         return
     end
     App.tracked_bag_signature = currentSignature
-    refreshInventoryUi()
+    refreshInventoryChange()
 end
 
 local function ensureButton()
@@ -1167,10 +1175,18 @@ local function ensureButton()
             if button ~= nil and button.StopMovingOrSizing ~= nil then
                 button:StopMovingOrSizing()
             end
-            if button ~= nil and button.GetEffectiveOffset ~= nil then
-                local ok, x, y = pcall(function()
-                    return button:GetEffectiveOffset()
-                end)
+            if button ~= nil then
+                local ok, x, y = false, nil, nil
+                if button.GetOffset ~= nil then
+                    ok, x, y = pcall(function()
+                        return button:GetOffset()
+                    end)
+                end
+                if (not ok or x == nil or y == nil) and button.GetEffectiveOffset ~= nil then
+                    ok, x, y = pcall(function()
+                        return button:GetEffectiveOffset()
+                    end)
+                end
                 if ok then
                     button.__nuzi_just_dragged = true
                     settings.button_x = tonumber(x) or settings.button_x
