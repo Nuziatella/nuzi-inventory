@@ -3,7 +3,7 @@ local Constants = {}
 Constants.ADDON = {
     name = "Nuzi Inventory",
     author = "Nuzi",
-    version = "2.0.0",
+    version = "2.0.1",
     desc = "Search bag, bank, alt, and tracked items across your roster"
 }
 

@@ -166,7 +166,7 @@ local function onLoad()
     inventoryEvents:OnSafe("BANK_UPDATE", "BANK_UPDATE", onTrackedInventoryEvent)
     inventoryEvents:OnSafe("UNIT_EQUIPMENT_CHANGED", "UNIT_EQUIPMENT_CHANGED", onTrackedInventoryEvent)
     inventoryEvents:OnSafe("ITEM_EQUIP_RESULT", "ITEM_EQUIP_RESULT", onTrackedInventoryEvent)
-    logger:Info("Loaded v" .. tostring(addon ~= nil and addon.version or "2.0.0"))
+    logger:Info("Loaded v" .. tostring(addon ~= nil and addon.version or "2.0.1"))
 end
 
 local function onUnload()

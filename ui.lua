@@ -1083,8 +1083,11 @@ end
 local function refreshInventoryChange()
     if isWindowVisible() then
         refreshInventoryUi()
-    elseif refreshTrackedHotbar ~= nil then
-        refreshTrackedHotbar()
+    else
+        buildResults()
+        if refreshTrackedHotbar ~= nil then
+            refreshTrackedHotbar()
+        end
     end
 end
 

@@ -198,6 +198,17 @@ local function makeItemKey(name, itemType)
     return ""
 end
 
+local function getBagItemCountByType(itemType)
+    local numericType = tonumber(itemType)
+    if numericType == nil or api.Bag == nil or api.Bag.CountBagItemByItemType == nil then
+        return nil
+    end
+    local count = tonumber(safePcall(function()
+        return api.Bag:CountBagItemByItemType(math.floor(numericType))
+    end)) or 0
+    return math.max(0, math.floor(count))
+end
+
 resolveBagEntry = function(slotIndex, info, bagType, indexMode)
     if type(info) ~= "table" then
         return nil
@@ -299,63 +310,15 @@ local function scanBagEntries()
         return {}
     end
 
-    local function collectBagType(bagType, rangeStart, rangeEnd, indexMode)
-        local out = {}
-        for slot = rangeStart, rangeEnd do
-            local info = safePcall(function()
-                return api.Bag:GetBagItemInfo(bagType, slot)
-            end)
-            local entry = resolveBagEntry(slot, info, bagType, indexMode)
-            if entry ~= nil then
-                table.insert(out, entry)
-            end
-        end
-        return out
-    end
-
     local entries = {}
-    local seen = {}
-    local function mergeEntries(probe)
-        for _, entry in ipairs(probe or {}) do
-            local dedupeKey = table.concat({
-                trim(entry.item_key),
-                trim(entry.name),
-                tostring(entry.count or 1),
-                trim(entry.icon_path)
-            }, "|")
-            if not seen[dedupeKey] then
-                seen[dedupeKey] = entry
-                table.insert(entries, entry)
-            else
-                local existing = seen[dedupeKey]
-                if existing ~= nil then
-                    if trim(existing.icon_path) == "" then
-                        existing.icon_path = trim(entry.icon_path)
-                    end
-                    if trim(existing.equip_slot) == "" then
-                        existing.equip_slot = trim(entry.equip_slot)
-                    end
-                    if existing.slot_index == nil and entry.slot_index ~= nil then
-                        existing.slot_index = entry.slot_index
-                        existing.index_mode = entry.index_mode
-                    end
-                    if existing.slot_index_zero == nil and entry.slot_index_zero ~= nil then
-                        existing.slot_index_zero = entry.slot_index_zero
-                    end
-                    if existing.slot_index_one == nil and entry.slot_index_one ~= nil then
-                        existing.slot_index_one = entry.slot_index_one
-                    end
-                    if existing.bag_type == nil and entry.bag_type ~= nil then
-                        existing.bag_type = entry.bag_type
-                    end
-                end
-            end
+    for slot = 1, capacity do
+        local info = safePcall(function()
+            return api.Bag:GetBagItemInfo(1, slot)
+        end)
+        local entry = resolveBagEntry(slot, info, 1, "one_based")
+        if entry ~= nil then
+            table.insert(entries, entry)
         end
-    end
-
-    for bagType = 1, 6 do
-        mergeEntries(collectBagType(bagType, 0, capacity - 1, "zero_based"))
-        mergeEntries(collectBagType(bagType, 1, capacity, "one_based"))
     end
     return entries
 end
@@ -734,6 +697,16 @@ local function aggregateTrackedItems()
             if aggregate.item_flag_cannot_equip == "" then
                 aggregate.item_flag_cannot_equip = lowerKey(tracked.item_flag_cannot_equip or tracked.itemFlagCannotEquip)
             end
+            local liveBagCount = getBagItemCountByType(aggregate.item_type or tracked.item_type or tracked.itemType)
+            if liveBagCount ~= nil then
+                aggregate.count = math.max(
+                    0,
+                    math.floor(tonumber(aggregate.count) or 0)
+                        - math.floor(tonumber(aggregate.current_bag_count) or 0)
+                        + liveBagCount
+                )
+                aggregate.current_bag_count = liveBagCount
+            end
             aggregate.is_equippable = trim(aggregate.tracked_kind) == "equip"
             aggregate.has_live_bag_entry = aggregate.current_bag_count > 0
             table.insert(out, aggregate)
@@ -795,9 +768,7 @@ local function getTrackedBagCountSignature()
     for _, tracked in ipairs(settings.tracked_items or {}) do
         local itemType = tonumber(tracked.item_type or tracked.itemType)
         if itemType ~= nil then
-            local count = tonumber(safePcall(function()
-                return api.Bag:CountBagItemByItemType(itemType)
-            end)) or 0
+            local count = getBagItemCountByType(itemType) or 0
             table.insert(parts, tostring(itemType) .. ":" .. tostring(count))
         end
     end
